@@ -1,0 +1,125 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  role         Role
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  address      String?
+  age          Int?
+  gender       String?
+  image        String?
+  job          String?
+  name         String?
+  phone        String?
+  hotel        Hotel?        @relation("HotelAdmin")
+  reservations Reservation[]
+}
+
+model Hotel {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  location      String?
+  rating        Float          @default(0.0)
+  isSuspended   Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  adminId       String         @unique
+  closingTime   String?
+  image         String?
+  isClosed      Boolean        @default(false)
+  openingTime   String?
+  announcements Announcement[]
+  admin         User           @relation("HotelAdmin", fields: [adminId], references: [id])
+  products      Product[]
+  reservations  Reservation[]
+  reviews       Review[]
+}
+
+model Product {
+  id           String        @id @default(uuid())
+  hotelId      String
+  type         ProductType
+  name         String
+  description  String?
+  price        Float
+  isAvailable  Boolean       @default(true)
+  isSpecial    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  image        String?
+  hotel        Hotel         @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+}
+
+model Reservation {
+  id            String            @id @default(uuid())
+  hotelId       String
+  productId     String
+  customerPhone String?
+  date          DateTime
+  status        ReservationStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  userId        String?
+  hotel         Hotel             @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  product       Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User?             @relation(fields: [userId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  hotelId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  hotelId   String
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  hotel     Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  SUPER_ADMIN
+  HOTEL_ADMIN
+  USER
+}
+
+enum ProductType {
+  MEAL
+  ROOM
+  RESERVATION_TABLE
+  MEETING_HALL
+  DRINK
+  SPA
+  MASSAGE
+  SWIMMING_POOL
+  ENTERTAINMENT
+  PARK
+  OTHER
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
