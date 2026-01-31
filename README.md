@@ -5,7 +5,7 @@ A multi-hotel management system allowing a Super Admin to manage multiple hotels
 
 ## Tech Stack
 - **Frontend**: React, Vite, Vanilla CSS (Premium Design)
-- **Backend**: Node.js, Express, Prisma, PostgreSQL (Neon)
+- **Backend**: Node.js, Prisma, PostgreSQL (Neon)
 
 ## How to Run
 
