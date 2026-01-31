@@ -7,7 +7,7 @@ A multi-hotel management system allowing a Super Admin to manage multiple hotels
 - **Frontend**: React, Vite, Vanilla CSS (Premium Design)
 - **Backend**: Node.js, Prisma, PostgreSQL (Neon)
 
-## How to Run
+# How to Run
 
 ### 1. Database Setup
 Ensure your PostgreSQL database is running and the `DATABASE_URL` is set in `backend/.env`.
