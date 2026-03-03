@@ -7,7 +7,7 @@ export const handleReservationRoutes = async (req, res, pathname, method, runMid
     // make a reservation
     if (pathname === '/api/reservations' && method === 'POST') {
         if (await runMiddleware(req, res, protect)) {
-            return reservationController.createReservation(req, res);
+            await reservationController.createReservation(req, res);
         }
         return true;
     }
@@ -15,7 +15,7 @@ export const handleReservationRoutes = async (req, res, pathname, method, runMid
     // get my own reservations
     if (pathname === '/api/reservations/my-reservations' && method === 'GET') {
         if (await runMiddleware(req, res, protect)) {
-            return reservationController.getUserReservations(req, res);
+            await reservationController.getUserReservations(req, res);
         }
         return true;
     }
@@ -26,7 +26,7 @@ export const handleReservationRoutes = async (req, res, pathname, method, runMid
         req.params = { hotelId: reservationsHotelMatch[1] };
         if (await runMiddleware(req, res, protect)) {
             if (await runMiddleware(req, res, hotelAdminOnly)) {
-                return reservationController.getReservations(req, res);
+                await reservationController.getReservations(req, res);
             }
         }
         return true;
@@ -37,7 +37,7 @@ export const handleReservationRoutes = async (req, res, pathname, method, runMid
     if (reservationStatusMatch && method === 'PUT') {
         req.params = { id: reservationStatusMatch[1] };
         if (await runMiddleware(req, res, protect)) {
-            return reservationController.updateReservationStatus(req, res);
+            await reservationController.updateReservationStatus(req, res);
         }
         return true;
     }

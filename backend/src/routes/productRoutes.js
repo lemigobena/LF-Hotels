@@ -18,7 +18,8 @@ export const handleProductRoutes = async (req, res, pathname, method, runMiddlew
     const productsByHotelMatch = pathname.match(/^\/api\/products\/hotel\/([a-zA-Z0-9-]+)$/);
     if (productsByHotelMatch && method === 'GET') {
         req.params = { hotelId: productsByHotelMatch[1] };
-        return productController.getProductsByHotel(req, res);
+        productController.getProductsByHotel(req, res);
+        return true;
     }
 
     // specific product actions

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/api';
-import { Plus, Trash2, Calendar, Star, Utensils, Bed, List, Settings } from 'lucide-react';
+import { Plus, Trash2, Calendar, Star, Utensils, Bed, List, Settings, Bell, MessageSquare } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import CalendarComponent from '../components/CalendarComponent'; // Can reuse for reservation view?
 import Hero from '../components/Hero';
@@ -15,9 +15,12 @@ const HotelAdminDashboard = () => {
 
     const [products, setProducts] = useState([]);
     const [reservations, setReservations] = useState([]);
+    const [announcements, setAnnouncements] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [showProductForm, setShowProductForm] = useState(false);
+    const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
     const [hotelDetails, setHotelDetails] = useState(null);
-    const [activeSection, setActiveSection] = useState(initialSection); // services, menu, rooms, specials, activities, settings
+    const [activeSection, setActiveSection] = useState(initialSection); // services, menu, rooms, specials, activities, settings, announcements, reviews
     const [activeActivityTab, setActiveActivityTab] = useState('orders'); // orders, bookings, reservations
     const user = JSON.parse(sessionStorage.getItem('user'));
     const hotelId = user?.hotelId;
@@ -40,11 +43,18 @@ const HotelAdminDashboard = () => {
         isSpecial: false
     });
 
+    const [announcementForm, setAnnouncementForm] = useState({
+        title: '',
+        content: ''
+    });
+
     useEffect(() => {
         if (hotelId) {
             fetchProducts();
             fetchReservations();
             fetchHotelDetails();
+            fetchAnnouncements();
+            fetchReviews();
         }
     }, [hotelId]);
 
@@ -70,6 +80,24 @@ const HotelAdminDashboard = () => {
         try {
             const res = await api.get(`/reservations/hotel/${hotelId}`);
             setReservations(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchAnnouncements = async () => {
+        try {
+            const res = await api.get(`/announcements/hotel/${hotelId}`);
+            setAnnouncements(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const fetchReviews = async () => {
+        try {
+            const res = await api.get(`/reviews/${hotelId}`);
+            setReviews(res.data);
         } catch (err) {
             console.error(err);
         }
@@ -148,6 +176,8 @@ const HotelAdminDashboard = () => {
         { id: 'menu', label: 'Menu', icon: <Utensils size={18} /> },
         { id: 'rooms', label: 'Rooms', icon: <Bed size={18} /> },
         { id: 'reservations', label: 'Orders & Bookings', icon: <Calendar size={18} /> },
+        { id: 'announcements', label: 'Announcements', icon: <Bell size={18} /> },
+        { id: 'reviews', label: 'Customer Reviews', icon: <MessageSquare size={18} /> },
     ];
 
     const productTypeOptions = () => {
@@ -347,6 +377,119 @@ const HotelAdminDashboard = () => {
                                         </div>
                                     </div>
                                 ))
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ANNOUNCEMENTS VIEW */}
+                {activeSection === 'announcements' && (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+                            <button className="btn btn-primary" onClick={() => setShowAnnouncementForm(!showAnnouncementForm)}>
+                                <Plus size={16} style={{ marginRight: '0.5rem' }} /> Create Announcement
+                            </button>
+                        </div>
+
+                        {showAnnouncementForm && (
+                            <div className="card animate-fade-in" style={{ marginBottom: '2rem', border: '1px solid var(--primary)' }}>
+                                <h3 style={{ marginBottom: '1rem' }}>New Announcement</h3>
+                                <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                        await api.post('/announcements', announcementForm);
+                                        setShowAnnouncementForm(false);
+                                        setAnnouncementForm({ title: '', content: '' });
+                                        fetchAnnouncements();
+                                    } catch (err) {
+                                        alert('Failed to post announcement');
+                                    }
+                                }}>
+                                    <div className="form-group">
+                                        <label>Title</label>
+                                        <input value={announcementForm.title} onChange={e => setAnnouncementForm({ ...announcementForm, title: e.target.value })} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Content</label>
+                                        <textarea rows="4" value={announcementForm.content} onChange={e => setAnnouncementForm({ ...announcementForm, content: e.target.value })} required />
+                                    </div>
+                                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>Post Announcement</button>
+                                </form>
+                            </div>
+                        )}
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                            {announcements.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No announcements found.</p>
+                            ) : (
+                                announcements.map(a => (
+                                    <div key={a.id} className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                            <h4 style={{ margin: 0 }}>{a.title}</h4>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(a.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <p style={{ color: 'var(--text-muted)', flex: 1 }}>{a.content}</p>
+                                        <button
+                                            className="btn btn-outline"
+                                            style={{ marginTop: '1rem', width: '100%', borderColor: 'red', color: 'red' }}
+                                            onClick={async () => {
+                                                if (!window.confirm('Delete this announcement?')) return;
+                                                try {
+                                                    await api.delete(`/announcements/${a.id}`);
+                                                    fetchAnnouncements();
+                                                } catch (err) {
+                                                    alert('Failed to delete');
+                                                }
+                                            }}
+                                        >
+                                            <Trash2 size={16} style={{ marginRight: '0.5rem' }} /> Delete
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* REVIEWS VIEW */}
+                {activeSection === 'reviews' && (
+                    <div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--glass-border)' }}>
+                                <div>
+                                    <h3 style={{ margin: 0 }}>Average Rating</h3>
+                                    <p style={{ margin: 0, color: 'var(--text-muted)' }}>Based on {reviews.length} reviews</p>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Star size={32} fill="gold" stroke="none" />
+                                    <span style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                                        {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 'No Ratings'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {reviews.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No reviews found for this hotel.</p>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                                    {reviews.map(r => (
+                                        <div key={r.id} className="card">
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                                <div style={{ display: 'flex' }}>
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} size={16} fill={i < r.rating ? 'gold' : 'none'} color={i < r.rating ? 'gold' : 'var(--glass-border)'} />
+                                                    ))}
+                                                </div>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                    {new Date(r.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <p style={{ color: 'white', margin: 0, fontStyle: 'italic' }}>
+                                                "{r.comment || 'No comment provided.'}"
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     </div>

@@ -7,6 +7,7 @@ import * as hotelRoutes from './routes/hotelRoutes.js';
 import * as productRoutes from './routes/productRoutes.js';
 import * as reservationRoutes from './routes/reservationRoutes.js';
 import * as reviewRoutes from './routes/reviewRoutes.js';
+import * as announcementRoutes from './routes/announcementRoutes.js';
 
 // This helps with CORS stuff for the frontend
 const setCorsHeaders = (res) => {
@@ -21,24 +22,38 @@ const runMiddleware = (req, res, middleware) => {
         const next = () => {
             resolve(true);
         };
-        // Add status and json helpers
-        if (!res.status) {
-            res.status = (code) => {
-                res.statusCode = code;
-                return res;
-            };
-            res.json = (data) => {
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify(data));
+
+        // Always override res.json inside middleware context so that
+        // when middleware sends a rejection (401, 403, etc.), the
+        // promise resolves with false and execution stops cleanly.
+        const originalJson = res.json.bind(res);
+        const originalEnd = res.end.bind(res);
+        let resolved = false;
+
+        res.json = (data) => {
+            if (!resolved) {
+                resolved = true;
                 resolve(false);
-            };
-        }
+            }
+            originalJson(data);
+        };
+
+        res.end = (data) => {
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
+            originalEnd(data);
+        };
 
         middleware(req, res, next).catch((err) => {
             console.log('Error in middleware!');
             res.statusCode = 500;
-            res.end(JSON.stringify({ message: 'Internal error' }));
-            resolve(false);
+            originalEnd(JSON.stringify({ message: 'Internal error' }));
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
         });
     });
 };
@@ -98,6 +113,7 @@ export const handleRequest = async (req, res) => {
             if (await productRoutes.handleProductRoutes(req, res, pathname, method, runMiddleware)) return;
             if (await reservationRoutes.handleReservationRoutes(req, res, pathname, method, runMiddleware)) return;
             if (await reviewRoutes.handleReviewRoutes(req, res, pathname, method, runMiddleware)) return;
+            if (await announcementRoutes.handleAnnouncementRoutes(req, res, pathname, method, runMiddleware)) return;
 
             // --- ROOT ---
             if (pathname === '/' && method === 'GET') {
