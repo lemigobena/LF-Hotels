@@ -11,6 +11,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.gobenalemi.lfrestaurant",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#ffffff"
@@ -26,6 +27,12 @@
           "backgroundColor": "#ffffff"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b5eee17c-0486-4a3b-b97f-49f359ec154b"
+      }
+    },
+    "owner": "gobenalemi26"
   }
 }

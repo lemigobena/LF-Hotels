@@ -80,23 +80,34 @@ export const handleRequest = async (req, res) => {
         return res;
     };
 
-    // 4. Parse Body manually
-    let body = '';
-    req.on('data', chunk => {
-        body += chunk.toString();
-    });
+    // 4. Parse Body
+    if (req.isVercel) {
+        // Vercel has already parsed the body, use it or default to empty object
+        req.body = req.body || {};
+        await processRoute(req, res);
+    } else {
+        // Raw Node.js server needs to read the streams
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
 
-    req.on('end', async () => {
-        try {
-            if (body) {
-                req.body = JSON.parse(body);
-            } else {
-                req.body = {};
+        req.on('end', async () => {
+            try {
+                if (body) {
+                    req.body = JSON.parse(body);
+                } else {
+                    req.body = {};
+                }
+            } catch (error) {
+                console.error('JSON Parse Error:', error);
+                req.body = {}; // Fallback to empty body on parse failure
             }
-        } catch (error) {
-            console.error('JSON Parse Error:', error);
-            req.body = {}; // Fallback to empty body on parse failure
-        }
+            await processRoute(req, res);
+        });
+    }
+
+    async function processRoute(req, res) {
 
         // 5. URL Parsing
         const parsedUrl = url.parse(req.url, true);
@@ -133,5 +144,5 @@ export const handleRequest = async (req, res) => {
             res.statusCode = 500;
             res.end(JSON.stringify({ message: 'Internal Server Error' }));
         }
-    });
+    }
 };
