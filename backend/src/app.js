@@ -112,8 +112,15 @@ export const handleRequest = async (req, res) => {
         // 5. URL Parsing
         const parsedUrl = url.parse(req.url, true);
         req.query = parsedUrl.query;
-        const pathname = parsedUrl.pathname;
+        let pathname = parsedUrl.pathname;
         const method = req.method;
+
+        // Vercel serverless functions often strip the routing prefix. 
+        // For example a request to /api/auth/login might just be received as /auth/login.
+        // We ensure that the pathname matches the expected router paths.
+        if (req.isVercel && !pathname.startsWith('/api')) {
+            pathname = '/api' + pathname;
+        }
 
         console.log(`${method} ${pathname}`);
 
