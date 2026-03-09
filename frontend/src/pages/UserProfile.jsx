@@ -27,7 +27,8 @@ const UserProfile = () => {
                 }
 
                 // Fetch fresh data from API
-                const response = await fetch('http://localhost:5000/api/auth/me', {
+                const API_BASE = import.meta.env.VITE_API_URL || '/api';
+                const response = await fetch(`${API_BASE}/auth/me`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -64,7 +65,8 @@ const UserProfile = () => {
         e.preventDefault();
         try {
             const token = sessionStorage.getItem('token');
-            const res = await fetch('http://localhost:5000/api/auth/profile', {
+            const API_BASE = import.meta.env.VITE_API_URL || '/api';
+            const res = await fetch(`${API_BASE}/auth/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
