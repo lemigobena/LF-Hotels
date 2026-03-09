@@ -115,6 +115,11 @@ export const handleRequest = async (req, res) => {
         let pathname = parsedUrl.pathname;
         const method = req.method;
 
+        console.log(`\n[VERCEL INCOMING] req.url: ${req.url}`);
+        console.log(`[VERCEL INCOMING] Original pathname: ${pathname}`);
+        console.log(`[VERCEL INCOMING] req.headers['x-now-route-matches']: ${req.headers['x-now-route-matches']}`);
+        console.log(`[VERCEL INCOMING] x-forwarded-host: ${req.headers['x-forwarded-host']}`);
+
         // Vercel serverless functions often strip the routing prefix. 
         // For example a request to /api/auth/login might just be received as /auth/login.
         // We ensure that the pathname matches the expected router paths.
@@ -122,7 +127,7 @@ export const handleRequest = async (req, res) => {
             pathname = '/api' + pathname;
         }
 
-        console.log(`${method} ${pathname}`);
+        console.log(`[VERCEL ROUTING] Final transformed: ${method} ${pathname}`);
 
         try {
             // These are my route files
