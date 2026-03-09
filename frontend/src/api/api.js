@@ -6,7 +6,16 @@
  * while eliminating the overhead of external dependencies.
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+let BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+// Normalize BASE_URL to prevent trailing slash issues
+BASE_URL = BASE_URL.replace(/\/$/, '');
+
+// Vercel deployment safety check: if the user provided their backend domain 
+// but forgot the /api suffix, we append it so requests hit the serverless function.
+if (BASE_URL !== '/api' && !BASE_URL.endsWith('/api')) {
+    BASE_URL += '/api';
+}
 
 // This function does all the fetch work
 const request = async (endpoint, options = {}) => {
