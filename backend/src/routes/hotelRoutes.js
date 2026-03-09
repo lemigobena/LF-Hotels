@@ -6,7 +6,7 @@ import { protect, adminOnly } from '../middleware/authMiddleware.js';
 export const handleHotelRoutes = async (req, res, pathname, method, runMiddleware) => {
     // get all hotels
     if (pathname === '/api/hotels' && method === 'GET') {
-        hotelController.getHotels(req, res);
+        await hotelController.getHotels(req, res);
         return true;
     }
 
@@ -39,7 +39,7 @@ export const handleHotelRoutes = async (req, res, pathname, method, runMiddlewar
     if (hotelIdMatch) {
         req.params = { id: hotelIdMatch[1] };
         if (method === 'GET') {
-            hotelController.getHotelById(req, res);
+            await hotelController.getHotelById(req, res);
             return true;
         }
         if (method === 'DELETE') {

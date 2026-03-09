@@ -16,7 +16,7 @@ export const handleReviewRoutes = async (req, res, pathname, method, runMiddlewa
     const reviewsHotelMatch = pathname.match(/^\/api\/reviews\/([a-zA-Z0-9-]+)$/);
     if (reviewsHotelMatch && method === 'GET') {
         req.params = { hotelId: reviewsHotelMatch[1] };
-        reviewController.getReviewsByHotel(req, res);
+        await reviewController.getReviewsByHotel(req, res);
         return true;
     }
 

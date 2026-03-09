@@ -18,7 +18,7 @@ export const handleAnnouncementRoutes = async (req, res, pathname, method, runMi
     const announcementsHotelMatch = pathname.match(/^\/api\/announcements\/hotel\/([a-zA-Z0-9-]+)$/);
     if (announcementsHotelMatch && method === 'GET') {
         req.params = { hotelId: announcementsHotelMatch[1] };
-        announcementController.getAnnouncementsByHotel(req, res);
+        await announcementController.getAnnouncementsByHotel(req, res);
         return true;
     }
 

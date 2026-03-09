@@ -6,13 +6,13 @@ import { protect } from '../middleware/authMiddleware.js';
 export const handleAuthRoutes = async (req, res, pathname, method, runMiddleware) => {
     // login
     if (pathname === '/api/auth/login' && method === 'POST') {
-        authController.login(req, res);
+        await authController.login(req, res);
         return true;
     }
 
     // signup
     if (pathname === '/api/auth/signup' && method === 'POST') {
-        authController.signup(req, res);
+        await authController.signup(req, res);
         return true;
     }
 
@@ -34,7 +34,7 @@ export const handleAuthRoutes = async (req, res, pathname, method, runMiddleware
 
     // forgot password
     if (pathname === '/api/auth/forgot-password' && method === 'POST') {
-        authController.forgotPassword(req, res);
+        await authController.forgotPassword(req, res);
         return true;
     }
 
@@ -42,7 +42,7 @@ export const handleAuthRoutes = async (req, res, pathname, method, runMiddleware
     const resetPwdMatch = pathname.match(/^\/api\/auth\/reset-password\/([\w-]+)$/);
     if (resetPwdMatch && method === 'POST') {
         req.params = { token: resetPwdMatch[1] };
-        authController.resetPassword(req, res);
+        await authController.resetPassword(req, res);
         return true;
     }
 
